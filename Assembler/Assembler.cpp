@@ -718,9 +718,9 @@ int main(int argc, char* argv[])
     string source;
     if(argc==1)
     {
-        cout<<"Enter Source Filename with Path : "<<endl;
+        cout<<"Enter Source Filename with Path : "<<endl;           // If Command line Argument not provided
         cin>>source;
-        if(source[0]=='1')source.assign("source.sicxe");
+        if(source[0]=='1')source.assign("source.sicxe");            //Enter 1 to use Default Source Filename : "source.sicxe"
     }
     else
     {
