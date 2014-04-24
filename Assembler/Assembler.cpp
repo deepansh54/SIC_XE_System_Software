@@ -456,12 +456,13 @@ int pass2()
                 else
                     newRecord=true;
             }
-            else if(codeinfo[i][1]==3)                              // Format 3 Instruction
+            else if(codeinfo[i][1]==3)                              // Format 3 Instruction (24 bit)
             {
-                int ta = 0, pc = codeinfo[i+1][0];
-
-                if(code[i][2][0]=='#')                              // Immediate Addressing
-                {
+                                                                    //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                int ta = 0, pc = codeinfo[i+1][0];                  //              n i    x b p e
+                                                                    // |-- byte1 (8)---|  |--------- byte2 (16) ----------|
+                if(code[i][2][0]=='#')
+                {                                                   // Immediate Addressing
                     n = 0;
                     code[i][2].erase(code[i][2].begin());
 
@@ -535,9 +536,11 @@ int pass2()
                     newRecord=true;
 
             }
-            else                                                // Format 4 instruction;
-            {
-                e = 1;
+            else                                                // Format 4 instruction (32 bit)
+            {                                                   //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                                                                //              n i    x b p e
+                e = 1;                                          // |-- byte1 (8)---|  |------------- byte3 (24) ----------------------|
+
                 if(code[i][2][0]=='#')                              // Immediate Addressing
                 {
                     n = 0;
