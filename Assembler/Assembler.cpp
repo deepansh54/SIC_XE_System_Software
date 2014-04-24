@@ -332,11 +332,11 @@ int baseOrPc ( int ta, int regB ,int pc , bool canUseBaseAsReg )
     disp = ta - pc ;
     if( disp>=(-2048) && disp<=2047 )
     {
-        return 1;  // PC Relative
+        return 1;                                                // PC Relative
     }
     else if(!canUseBaseAsReg && (disp = ta - regB)>=0 && disp<=4095)
     {
-        return 0;  // Base Relative
+        return 0;                                                // Base Relative
     }
     else
     {
@@ -348,14 +348,16 @@ int baseOrPc ( int ta, int regB ,int pc , bool canUseBaseAsReg )
     }
 }
 
+int t = 0;                                                         // Contains Total No. of Text Records
+string textRecord[100],header = "H^",endRecord = "E^";
+
 int pass2()
 {
     ofstream fs;
     fs.open("objectCode.o",ios_base::out);
 
-    string textRecord[100],header = "H^",endRecord = "E^";
     string record = "      ";
-    int t=0,recordLength=0, regB = 0;
+    int recordLength=0, regB = 0;
     bool canUseBaseAsReg = true;
 
     if(!strcmp(code[0][1].c_str(),"START"))
@@ -456,13 +458,19 @@ int pass2()
                 else
                     newRecord=true;
             }
-            else if(codeinfo[i][1]==3)                              // Format 3 Instruction (24 bit)
+            else if(codeinfo[i][1]==3)
             {
-                                                                    //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-                int ta = 0, pc = codeinfo[i+1][0];                  //              n i    x b p e
-                                                                    // |-- byte1 (8)---|  |--------- byte2 (16) ----------|
+
+                // Format 3 Instruction (24 bit)
+                //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                //              n i    x b p e
+                // |-- byte1 (8)---|  |--------- byte2 (16) ----------|
+
+
+                int ta = 0, pc = codeinfo[i+1][0];
                 if(code[i][2][0]=='#')
-                {                                                   // Immediate Addressing
+                {
+                    // Immediate Addressing
                     n = 0;
                     code[i][2].erase(code[i][2].begin());
 
@@ -536,11 +544,15 @@ int pass2()
                     newRecord=true;
 
             }
-            else                                                // Format 4 instruction (32 bit)
-            {                                                   //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-                                                                //              n i    x b p e
-                e = 1;                                          // |-- byte1 (8)---|  |------------- byte3 (24) ----------------------|
+            else
+            {
 
+                // Format 4 instruction (32 bit)
+                //  0 0 0 0 0 0 0 0    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                //              n i    x b p e
+                // |-- byte1 (8)---|  |------------- byte3 (24) ----------------------|
+
+                e = 1;
                 if(code[i][2][0]=='#')                              // Immediate Addressing
                 {
                     n = 0;
@@ -678,15 +690,21 @@ int pass2()
 
         if(newRecord)
         {
-            textRecord[t].replace(2,7,decToHex(codeinfo[i][0]));            // Replace with last Record's Starting address
-            textRecord[t].append("^");
-            textRecord[t].append(obcodeStr);                                // if previous text record was full before inserting last record.
+            textRecord[t].replace(2,7,decToHex(codeinfo[i][0]));      // Replace with last Record's Starting address
+            textRecord[t].append("^");                                // if previous text record was full before inserting last record.
+            textRecord[t].append(obcodeStr);
             recordLength+=obcodeStr.length();
         }
         //cout<<textRecord[t]<<endl;
     }
 
     fs.close();
+
+    return 1;
+}
+
+void displayOutput()                                                   // Function for Displaying Output
+{
 
     cout<<"\n\nLOCCTR\t\tLABEL\tOPCODE\tOPERAND\t\tOBJECT CODE\n";                                  // Print Source Code
     cout<<"----------------------------------------------------------------"<<endl;
@@ -710,7 +728,6 @@ int pass2()
     for(int r=0; r<=t; r++)cout<<textRecord[r]<<endl;
     cout<<endRecord<<endl;
 
-    return 1;
 }
 
 int main(int argc, char* argv[])
@@ -726,8 +743,14 @@ int main(int argc, char* argv[])
     {
         source.assign(argv[1]);
     }
-    freopen ("assemblerOutput.txt","w",stdout);                     // Redirect all output to file
+
     pass1(source);
     pass2();
+
+    displayOutput();                                                // Display Output on Screen
+    freopen ("assemblerOutput.txt","w",stdout);                     // Redirect all output to file
+    displayOutput();
+    fclose (stdout);
+
     return 0;
 }
